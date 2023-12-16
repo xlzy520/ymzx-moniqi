@@ -108,7 +108,7 @@ export default defineComponent({
   height: 100%;
 
   .layout-sider {
-    background: var(--color-menu-dark-bg);
+    background: var(--color-bg-2);
     position: fixed;
     top: 0;
     left: 0;
@@ -120,11 +120,10 @@ export default defineComponent({
       display: flex;
       align-items: center;
       padding-left: 8px;
-      background: var(--color-menu-dark-bg);
+      background: var(--color-bg-2);
       height: 60px;
 
       .arco-typography {
-        color: #fff;
         font-size: 18px;
         width: 200px;
       }

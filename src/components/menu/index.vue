@@ -125,7 +125,6 @@ export default defineComponent({
     }
     return () => (
       <a-menu
-        theme='dark'
         v-model:collapsed={collapsed.value}
         show-collapse-button
         auto-open={false}
