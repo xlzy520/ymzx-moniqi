@@ -20,6 +20,15 @@ const router = createRouter({
     },
     Login,
     {
+      path: '/config',
+      name: 'config',
+      component: () => import('@/views/login/config.vue'),
+      meta: {
+        title: '',
+        requiresAuth: false,
+      },
+    },
+    {
       name: 'root',
       path: '/',
       component: PageLayout,
