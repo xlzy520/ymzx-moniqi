@@ -3,6 +3,7 @@
     <div class="left_logo abs"><a href="https://ymzx.qq.com/web202312/index.html" target="_blank" class="absf"></a></div>
     <div class="text-center">
       <video
+        id="video"
         controls
         autoplay
         preload="true"
@@ -16,7 +17,7 @@
     </div>
     <div class="flex items-center my-2">
       <a-input v-model="nickname" placeholder="请输入玩家昵称"></a-input>
-      <a-button type="primary" class="ml-4" :loading="loading" @click="onAdd">兑换</a-button>
+      <a-button type="primary" class="ml-4" :loading="loading" @click="onAdd">激活</a-button>
     </div>
     <div class="bg-white h-[400px]">
       <a-table :data="data" :scroll="{ y: 400 }">
@@ -27,6 +28,7 @@
               <a-tag color="green">激活成功</a-tag>
             </template>
           </a-table-column>
+          <a-table-column title="激活时间" data-index="time"></a-table-column>
         </template>
       </a-table>
     </div>
@@ -36,30 +38,14 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
 import { Message } from '@arco-design/web-vue'
-import LoginBanner from './components/banner.vue'
+import dayjs from 'dayjs'
+// import LoginBanner from './components/banner.vue'
 // import LoginForm from './components/login-form.vue'
 
 const data = ref([
   {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-    tags: ['nice', 'developer'],
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-    tags: ['loser'],
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sidney No. 1 Lake Park',
-    tags: ['cool', 'teacher'],
+    name: '元梦之星',
+    time: dayjs().format('YYYY-MM-DD HH:mm:ss'),
   },
 ])
 
@@ -83,20 +69,33 @@ const onAdd = () => {
     return
   }
   loading.value = true
-  // 取出第一个昵称
-  // const name = allNicknames.value.shift()
-  // 添加到最后一个
-  data.value.unshift({ name })
-  loading.value = false
-  Message.success({
-    content: '添加成功',
-  })
+  nickname.value = ''
+  setTimeout(() => {
+    data.value.unshift({ name, time: dayjs().format('YYYY-MM-DD HH:mm:ss') })
+    loading.value = false
+    Message.success({
+      content: '添加成功',
+    })
+  }, 600)
 }
 
-onMounted(() => {
-  const nicknames = localStorage.getItem('nicknames') || ''
-  allNicknames.value = nicknames.split('\n').filter((item) => item)
+const allowKey = ['wRFtz$ZC3Q&J', '89sKCEKDA^HA', 'tyr59p7TEBuM', 'snerjFSgwq8&']
 
+onMounted(() => {
+  if (allowKey.some((item) => window.location.href.includes(item))) {
+    const nicknames = localStorage.getItem('nicknames') || ''
+    allNicknames.value = nicknames.split('\n').filter((item) => item)
+    const video = document.querySelector('#video') as HTMLVideoElement
+    // 循环播放
+    if (video) {
+      video.addEventListener('ended', () => {
+        video.play()
+      })
+    }
+    // return
+  }
+  // alert('非法访问')
+  // location.href = 'https://ymzx.qq.com/web202312/index.html'
   // setInterval(() => {
   //   onAdd()
   // }, 5000)
@@ -125,6 +124,7 @@ onMounted(() => {
 video {
   width: 800px;
   margin: auto;
+  border-radius: 10px;
 }
 .left_logo {
   position: absolute;
