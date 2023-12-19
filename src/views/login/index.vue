@@ -12,8 +12,12 @@
       ></video>
     </div>
     <div class="flex items-center mt-1">
-      <a-tag color="red">元梦之星会员卡</a-tag>
+      <a-tag color="red">元梦之星皮肤宝箱</a-tag>
+      <a-tag class="ml-4" color="red">元梦星宝会员卡</a-tag>
       <a-tag class="ml-4" color="red">星钻 * 3000</a-tag>
+    </div>
+    <div class="flex items-center justify-center mt-1">
+      <a-tag size="large" :color="rest < 100 ? 'red' : 'green'">剩余名额 {{ rest }} 个</a-tag>
     </div>
     <div class="flex items-center my-2">
       <a-input v-model="nickname" placeholder="请输入玩家昵称"></a-input>
@@ -22,7 +26,14 @@
     <div class="bg-white h-[400px]">
       <a-table :data="data" :scroll="{ y: 400 }">
         <template #columns>
-          <a-table-column title="激活名称" data-index="name"></a-table-column>
+          <a-table-column title="激活名称" data-index="name">
+            <template #cell="{ record }">
+              <a-avatar shape="circle">
+                <img :src="record.avatar" />
+              </a-avatar>
+              <span class="ml-2">{{ record.name }}</span>
+            </template>
+          </a-table-column>
           <a-table-column title="激活状态" data-index="status">
             <template #cell>
               <a-tag color="green">激活成功</a-tag>
@@ -39,6 +50,7 @@
 import { ref, onMounted } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import dayjs from 'dayjs'
+import { avatars } from '@/views/login/data'
 // import LoginBanner from './components/banner.vue'
 // import LoginForm from './components/login-form.vue'
 
@@ -46,12 +58,14 @@ const data = ref([
   {
     name: '元梦之星',
     time: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+    avatar: avatars[Math.floor(Math.random() * avatars.length)],
   },
 ])
 
 const nickname = ref('')
 const allNicknames = ref()
 const loading = ref(false)
+const rest = ref(500)
 
 const onAdd = () => {
   const name = nickname.value
@@ -68,10 +82,18 @@ const onAdd = () => {
     })
     return
   }
+  const avatar = avatars[Math.floor(Math.random() * avatars.length)]
+  avatars.splice(avatars.indexOf(avatar), 1)
   loading.value = true
+  // 如果视频没有播放，就播放视频
+  const video = document.querySelector('#video') as HTMLVideoElement
+  if (video && video.paused) {
+    video.play()
+  }
   nickname.value = ''
   setTimeout(() => {
-    data.value.unshift({ name, time: dayjs().format('YYYY-MM-DD HH:mm:ss') })
+    rest.value -= 1
+    data.value.unshift({ name, avatar, time: dayjs().format('YYYY-MM-DD HH:mm:ss') })
     loading.value = false
     Message.success({
       content: '添加成功',
