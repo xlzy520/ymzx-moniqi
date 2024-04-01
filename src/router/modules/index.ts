@@ -10,14 +10,14 @@ import User from './user'
 /** simple end */
 
 export default [
-  Dashboard,
+  // Dashboard,
   /** simple */
-  Visualization,
-  List,
-  Form,
-  Profile,
-  Result,
-  Exception,
-  User,
+  // Visualization,
+  // List,
+  // Form,
+  // Profile,
+  // Result,
+  // Exception,
+  // User,
   /** simple end */
 ]

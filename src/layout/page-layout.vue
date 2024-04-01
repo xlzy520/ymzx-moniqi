@@ -20,7 +20,7 @@
                   alt="logo"
                   src="//p3-armor.byteimg.com/tos-cn-i-49unhts6dw/dfdba5317c0c20ce20e64fac803d52bc.svg~tplv-49unhts6dw-image.image"
                 />
-                <a-typography-title>Vue Admin Arco</a-typography-title>
+                <a-typography-title>执笔-B站弹幕自动发送</a-typography-title>
               </a-space>
             </div>
             <Menu />
@@ -176,7 +176,7 @@ export default defineComponent({
     min-width: @layout-max-width;
     min-height: 100vh;
     overflow-y: hidden;
-    background-color: var(--color-fill-2);
+    //background-color: var(--color-fill-2);
     transition: all 0.2s cubic-bezier(0.34, 0.69, 0.1, 1);
 
     .layout-navbar {

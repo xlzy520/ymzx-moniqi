@@ -61,8 +61,10 @@ export default defineComponent({
     // In this case only two levels of menus are available
     // You can expand as needed
 
-    const selectedKey = ref<string[]>([])
+    const selectedKey = ref<string[]>(['home'])
+
     const goto = (item: RouteRecordRaw) => {
+      selectedKey.value = [item.name]
       router.push({
         name: item.name,
       })
@@ -71,7 +73,10 @@ export default defineComponent({
       route,
       (newVal) => {
         if (newVal.meta.requiresAuth && !newVal.meta.hideInMenu) {
-          const key = newVal.matched[2]?.name as string
+          let key = newVal.matched[2]?.name as string
+          if (!key) {
+            key = newVal.matched[1]?.name as string
+          }
           selectedKey.value = [key]
         }
       },
@@ -98,6 +103,22 @@ export default defineComponent({
           _route.forEach((element) => {
             // This is demo, modify nodes as needed
             const icon = element?.meta?.icon ? `<${element?.meta?.icon}/>` : ``
+            if (!element.children) {
+              const r = (
+                <a-menu-item
+                  key={element.name}
+                  onClick={() => goto(element)}
+                  v-slots={{
+                    icon: () => h(compile(icon)),
+                    title: () => h(compile(t(element?.meta?.locale || ''))),
+                  }}
+                >
+                  {t(element?.meta?.locale || '')}
+                </a-menu-item>
+              )
+              nodes.push(r as never)
+              return
+            }
             const r = (
               <a-sub-menu
                 key={element?.name}
