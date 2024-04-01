@@ -1,71 +1,80 @@
 <template>
-  <div class="container">
-    <div class="left_logo abs"><a href="https://ymzx.qq.com/web202312/index.html" target="_blank" class="absf"></a></div>
-    <div class="text-center">
-      <video
-        id="video"
-        controls
-        autoplay
-        preload="true"
-        src="https://ymzx.lv.game.qq.com/dis_kt_051e943d711166e453474838a5ce5254_1702579567/0b53guaaoaaa2yaex4d37rs6onoda42qabya.f0.mp4"
-        poster="https://game.gtimg.cn/images/ymzx/web202312pc/main-wdbU1neL.jpg"
-      ></video>
-    </div>
-    <div class="flex items-center mt-1">
-      <a-tag color="red">元梦之星皮肤宝箱</a-tag>
-      <a-tag class="ml-4" color="red">元梦星宝会员卡</a-tag>
-      <a-tag class="ml-4" color="red">星钻 * 3000</a-tag>
-    </div>
-    <div class="flex items-center justify-center mt-1">
-      <a-tag size="large" :color="rest < 100 ? 'red' : 'green'">剩余名额 {{ rest }} 个</a-tag>
-    </div>
-    <div class="flex items-center my-2">
-      <a-input v-model="nickname" placeholder="请输入玩家昵称"></a-input>
-      <a-button type="primary" class="ml-4" :loading="loading" @click="onAdd">激活</a-button>
-    </div>
-    <div class="bg-white h-[400px]">
-      <a-table :data="data" :scroll="{ y: 400 }">
-        <template #columns>
-          <a-table-column title="激活名称" data-index="name">
-            <template #cell="{ record }">
-              <a-avatar shape="circle">
-                <img :src="record.avatar" />
-              </a-avatar>
-              <span class="ml-2">{{ record.name }}</span>
+  <div>
+    <div v-if="hasAuth" class="container">
+      <div class="left_logo abs"><a href="https://ymzx.qq.com/web202312/index.html" target="_blank" class="absf"></a></div>
+      <!--    <div class="text-center">-->
+      <!--      <video-->
+      <!--        id="video"-->
+      <!--        controls-->
+      <!--        autoplay-->
+      <!--        preload="true"-->
+      <!--        src="https://ymzx.lv.game.qq.com/dis_kt_051e943d711166e453474838a5ce5254_1702579567/0b53guaaoaaa2yaex4d37rs6onoda42qabya.f0.mp4"-->
+      <!--        poster="https://game.gtimg.cn/images/ymzx/web202312pc/main-wdbU1neL.jpg"-->
+      <!--      ></video>-->
+      <!--    </div>-->
+      <div style="margin-top: 20vh">
+        <div class="flex items-center justify-center mt-1 text-center w-full">
+          <a-tag color="red" size="large">永劫无间测试资格</a-tag>
+          <!--      <a-tag class="ml-4" color="red">元梦星宝会员卡</a-tag>-->
+          <!--      <a-tag class="ml-4" color="red">星钻 * 3000</a-tag>-->
+        </div>
+        <div class="flex items-center justify-center mt-2">
+          <a-tag size="large" :color="rest < 100 ? 'red' : 'green'">剩余名额 {{ rest }} 个</a-tag>
+        </div>
+        <div class="flex items-center my-2">
+          <a-input v-model="nickname" placeholder="请输入传火ID"></a-input>
+          <a-button type="primary" class="ml-4" :loading="loading" @click="onAdd">提交</a-button>
+        </div>
+        <div class="bg-white h-[500px]">
+          <a-table :data="data" :scroll="{ y: 400 }">
+            <template #columns>
+              <a-table-column title="昵称" data-index="name">
+                <template #cell="{ record }">
+                  <a-avatar shape="circle">
+                    <img :src="record.avatar" />
+                  </a-avatar>
+                  <span class="ml-2">{{ record.name }}</span>
+                </template>
+              </a-table-column>
+              <a-table-column title="状态" data-index="status">
+                <template #cell>
+                  <a-tag color="green">成功</a-tag>
+                </template>
+              </a-table-column>
+              <a-table-column title="时间" data-index="time"></a-table-column>
             </template>
-          </a-table-column>
-          <a-table-column title="激活状态" data-index="status">
-            <template #cell>
-              <a-tag color="green">激活成功</a-tag>
-            </template>
-          </a-table-column>
-          <a-table-column title="激活时间" data-index="time"></a-table-column>
-        </template>
-      </a-table>
+          </a-table>
+        </div>
+      </div>
     </div>
+    <div v-else>未授权或设备记录已上限</div>
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup>
 import { ref, onMounted } from 'vue'
-import { Message } from '@arco-design/web-vue'
+import { Message, Modal } from '@arco-design/web-vue'
 import dayjs from 'dayjs'
 import { avatars } from '@/views/login/data'
+import axios from 'axios'
 // import LoginBanner from './components/banner.vue'
 // import LoginForm from './components/login-form.vue'
 
+const service = axios.create({})
+
 const data = ref([
-  {
-    name: '元梦之星',
-    time: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-    avatar: avatars[Math.floor(Math.random() * avatars.length)],
-  },
+  // {
+  //   name: '传火',
+  //   time: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+  //   avatar: avatars[Math.floor(Math.random() * avatars.length)],
+  // },
 ])
 
 const nickname = ref('')
 const allNicknames = ref()
 const loading = ref(false)
 const rest = ref(500)
+const hasAuth = ref(false)
 
 const onAdd = () => {
   const name = nickname.value
@@ -86,7 +95,7 @@ const onAdd = () => {
   avatars.splice(avatars.indexOf(avatar), 1)
   loading.value = true
   // 如果视频没有播放，就播放视频
-  const video = document.querySelector('#video') as HTMLVideoElement
+  const video = document.querySelector('#video')
   if (video && video.paused) {
     video.play()
   }
@@ -104,18 +113,55 @@ const onAdd = () => {
 const allowKey = ['wRFtz$ZC3Q&J', '89sKCEKDA^HA', 'tyr59p7TEBuM', 'snerjFSgwq8&']
 
 onMounted(() => {
-  if (allowKey.some((item) => window.location.href.includes(item))) {
-    const nicknames = localStorage.getItem('nicknames') || ''
-    allNicknames.value = nicknames.split('\n').filter((item) => item)
-    const video = document.querySelector('#video') as HTMLVideoElement
-    // 循环播放
-    if (video) {
-      video.addEventListener('ended', () => {
-        video.play()
-      })
-    }
-    // return
+  let deviceID = localStorage.getItem('deviceID')
+  if (!deviceID) {
+    deviceID = Math.random().toString(36).substr(2)
   }
+  const key = new URLSearchParams(location.href.split('?')[1]).get('key')
+  service
+    .get('https://wj.xlzy520.cn/license/bind', {
+      params: {
+        key,
+        deviceID,
+        type: 'yjwj',
+      },
+    })
+    .then((res) => {
+      if (res.data.code === 20000) {
+        hasAuth.value = true
+        localStorage.setItem('deviceID', deviceID)
+        const viaBrowserDialog = localStorage.getItem('viaBrowserDialog')
+        if (!viaBrowserDialog) {
+          Modal.info({
+            title: '温馨提示',
+            content: '将链接转成二维码，QQ扫码打开，效果更佳',
+            okText: '知道了',
+            onOk(e) {
+              localStorage.setItem('viaBrowserDialog', 'true')
+            },
+          })
+        }
+      } else {
+        const message = res.data.message
+        Modal.info({
+          title: '提示',
+          content: `${message}，请联系微信：appl532978`,
+          okText: '知道了',
+        })
+      }
+    })
+  // if (allowKey.some((item) => window.location.href.includes(item))) {
+  //   const nicknames = localStorage.getItem('nicknames') || ''
+  //   allNicknames.value = nicknames.split('\n').filter((item) => item)
+  //   const video = document.querySelector('#video') as HTMLVideoElement
+  //   // 循环播放
+  //   if (video) {
+  //     video.addEventListener('ended', () => {
+  //       video.play()
+  //     })
+  //   }
+  //   // return
+  // }
   // alert('非法访问')
   // location.href = 'https://ymzx.qq.com/web202312/index.html'
   // setInterval(() => {
@@ -131,17 +177,17 @@ onMounted(() => {
 }
 .container {
   padding: 30px 0;
-  max-width: 800px;
+  max-width: 70vw;
   height: 100vh;
   max-height: 100vh;
   overflow: auto;
   margin: auto;
+  font-size: 40px;
 }
 #app {
   width: 100%;
   height: 100%;
-  background-image: url('https://game.gtimg.cn/images/ymzx/web202312/a1/home_bg-agQLIsSH.jpg');
-  background-repeat: repeat;
+  background-image: url('https://images.weserv.nl/?url=https://i0.hdslb.com/bfs/article/b644c3c691b385a07cc6a82446b2b6241557431.png');
 }
 video {
   width: 800px;
@@ -155,7 +201,8 @@ video {
   z-index: 2;
   width: 104px;
   height: 64px;
-  background: url(//game.gtimg.cn/images/ymzx/web202312pc/logo-GKu6Sdbo.png) center / contain no-repeat;
+  background: url(https://images.weserv.nl/?url=https://i0.hdslb.com/bfs/article/aa13902a25cb4e8ffa759708cb3b01741557431.png) center /
+    contain no-repeat;
   animation: slideDown 0.5s 1s ease-in-out both;
 }
 .absf {
