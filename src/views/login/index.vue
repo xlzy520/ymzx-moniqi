@@ -22,13 +22,13 @@
           <a-tag size="large" :color="rest < 100 ? 'red' : 'green'">剩余名额 {{ rest }} 个</a-tag>
         </div>
         <div class="flex items-center my-2">
-          <a-input v-model="nickname" placeholder="请输入传火ID"></a-input>
+          <a-input v-model="nickname" placeholder="请输入游戏ID"></a-input>
           <a-button type="primary" class="ml-4" :loading="loading" @click="onAdd">提交</a-button>
         </div>
         <div class="bg-white h-[500px]">
           <a-table :data="data" :scroll="{ y: 400 }">
             <template #columns>
-              <a-table-column title="昵称" data-index="name">
+              <a-table-column title="游戏ID" data-index="name">
                 <template #cell="{ record }">
                   <a-avatar shape="circle">
                     <img :src="record.avatar" />
@@ -187,7 +187,7 @@ onMounted(() => {
 #app {
   width: 100%;
   height: 100%;
-  background-image: url('https://images.weserv.nl/?url=https://i0.hdslb.com/bfs/article/b644c3c691b385a07cc6a82446b2b6241557431.png');
+  background-image: url('https://zhibi-share.oss-cn-shanghai.aliyuncs.com/b644c3c691b385a07cc6a82446b2b6241557431.png');
 }
 video {
   width: 800px;
