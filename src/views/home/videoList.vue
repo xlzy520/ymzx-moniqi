@@ -153,6 +153,9 @@ onMounted(() => {
   getList()
   getMode()
   asyncRunStatus()
+  getLocalValue('videoInterval').then((res) => {
+    videoInterval.value = res || 20
+  })
   runInterval = setInterval(() => {
     asyncRunStatus()
     getList()

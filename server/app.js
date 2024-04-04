@@ -319,9 +319,9 @@ const runVideoDanmu = async () => {
     }
     const danmuList = (await ConfigDataModel.findOne({ key: 'danmuList' })).value
     const danmuListJSON = JSON.parse(danmuList)
-    const danmuSendMode = (await ConfigDataModel.findOne({ key: 'danmuSendMode' })).value
+    const danmuSendMode = (await ConfigDataModel.findOne({ key: 'danmuSendMode' }))?.value || 'queue'
     console.log(`${currentTime()} 弹幕发送模式：${danmuSendMode}`)
-    const danmuInterval = (await ConfigDataModel.findOne({ key: 'danmuInterval' })).value
+    const danmuInterval = (await ConfigDataModel.findOne({ key: 'danmuInterval' }))?.value || 0.5
     let danmiuConfig
     let index = 0
     if (danmuSendMode === 'queue') {
@@ -331,6 +331,12 @@ const runVideoDanmu = async () => {
       danmiuConfig = danmuListJSON[Math.floor(Math.random() * danmuListJSON.length)]
     }
     let danmuCount = 0
+    if (!accounts.length) {
+      console.log('没有可用的账号')
+      stop = true
+      return
+    }
+
     for (const account of accounts) {
       console.log(`${currentTime()} 发送弹幕 ${account.mid} - ${account.nickname}`)
       if (!danmiuConfig) {
@@ -381,7 +387,7 @@ const runVideoDanmu = async () => {
     await ConfigDataModel.update({ value: 'stop' }, { key: 'danmuRunStatus' })
   }
   if (!stop) {
-    const videoInterval = (await ConfigDataModel.findOne({ key: 'videoInterval' })) || 20
+    const videoInterval = (await ConfigDataModel.findOne({ key: 'videoInterval' }))?.value || 20
     console.log(videoInterval, '===========打印的 ------ runVideoDanmu')
     await sleep(videoInterval * 1000)
     runVideoDanmu()

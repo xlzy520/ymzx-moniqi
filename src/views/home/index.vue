@@ -80,6 +80,9 @@ const getList = async () => {
 const checkStatusStartIndexVisible = ref(false)
 const checkStatusStartIndex = ref(0)
 const checkStatus = async (list) => {
+  if (!list) {
+    list = [...data.value].slice(checkStatusStartIndex.value)
+  }
   let index = 0
   for (const account of list) {
     index++
