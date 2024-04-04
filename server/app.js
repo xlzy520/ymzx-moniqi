@@ -2,6 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const express = require('express')
 const axios = require('axios')
+const qs = require('qs')
 const dayjs = require('dayjs')
 const cors = require('cors')
 const app = express()
@@ -9,6 +10,34 @@ const ConfigDataModel = require('./modules/data')
 const VideoModel = require('./modules/video')
 
 const isDev = process.env.mode === 'dev'
+
+const sleep = (time) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve()
+    }, time)
+  })
+}
+
+function hex2int(hex) {
+  const len = hex.length
+  const a = new Array(len)
+  let code
+  for (let i = 0; i < len; i++) {
+    code = hex.charCodeAt(i)
+    if (code >= 48 && code < 58) {
+      code -= 48
+    } else {
+      code = (code & 0xdf) - 65 + 10
+    }
+    a[i] = code
+  }
+
+  return a.reduce((acc, c) => {
+    acc = 16 * acc + c
+    return acc
+  }, 0)
+}
 
 app.use(cors())
 app.use(
@@ -237,349 +266,191 @@ app.get('/api/getVideoList', (req, res) => {
     })
 })
 
-app.post('/config/add', (req, res) => {
-  const { name, value, key } = req.body
-  if (key !== 'D3YauWstVc6aguaxqE') {
-    res.send({
-      code: 500,
-      data: null,
-      message: '秘钥错误',
-    })
-    return
+const postDanmu = ({ mid, csrf, cookie, cid, aid, message, progress, fontsize = 25, color = 16777215, mode = 5 }) => {
+  const formdata = {
+    color,
+    fontsize,
+    pool: 0,
+    mode,
+    type: 1,
+    oid: cid,
+    msg: message,
+    aid,
+    progress,
+    rnd: 2,
+    plat: 1,
+    checkbox_type: 0,
+    polaris_appid: 100,
+    polaris_platfrom: 5,
+    spmid: '333.788.0.0',
+    from_spmid: '333.999.0.0',
+    csrf,
   }
-  const data = {
-    name,
-    value,
-  }
-  ConfigDataModel.add(data)
-    .then((result) => {
-      res.send({
-        code: 200,
-        data: result,
-        message: '添加成功',
-      })
-    })
-    .catch((err) => {
-      res.send({
-        code: 500,
-        data: err,
-        message: '添加失败',
-      })
-    })
-})
-
-app.post('/config/update', (req, res) => {
-  const { name, value, key } = req.body
-  if (!isDev && key !== 'D3YauWstVc6aguaxqE') {
-    res.send({
-      code: 500,
-      data: null,
-      message: '秘钥错误',
-    })
-    return
-  }
-  const data = {
-    name,
-    value,
-  }
-  ConfigDataModel.update(data, { name })
-    .then((result) => {
-      res.send({
-        code: 200,
-        data: result,
-        message: '更新成功',
-      })
-    })
-    .catch((err) => {
-      res.send({
-        code: 500,
-        data: err.message,
-        message: '更新失败',
-      })
-    })
-})
-
-app.get('/config/get', (req, res) => {
-  const { key, name } = req.query
-  ConfigDataModel.findOne({
-    name,
-    isDeleted: false,
+  const data = qs.stringify(formdata)
+  return axios.post(`https://api.bilibili.com/x/v2/dm/post`, data, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      cookie,
+    },
   })
-    .then((result) => {
-      res.send({
-        code: 200,
-        data: result,
-        message: '查询成功',
-      })
-    })
-    .catch((err) => {
-      res.send({
-        code: 500,
-        data: err,
-        message: '查询失败',
-      })
-    })
-})
+}
 
-app.get('/license/adminxlzy520/add', (req, res) => {
-  const { type } = req.query
-  // 生成一个32位的随机字符串
-  const randomStr = Math.random().toString(36).substr(2)
-  const data = {
-    key: randomStr,
-    type,
-  }
-  LicenseModel.add(data)
-    .then((result) => {
-      res.send({
-        code: 200,
-        data: result,
-        message: '添加成功',
-      })
-    })
-    .catch((err) => {
-      res.send({
-        code: 500,
-        data: err,
-        message: '添加失败',
-      })
-    })
-})
+let stop = true
+let currentVideo = null
 
-app.get('/license/bind', async (req, res) => {
-  let { key, deviceID, type } = req.query
-  const clientIP = req.headers['x-forwarded-for'] || req.ip
-  console.log(`【${currentTime()}】 开始绑定 ${key} ${deviceID}， 客户端IP: ${clientIP}`)
-  if (!key || !deviceID) {
-    res.send({
-      code: 500,
-      data: null,
-      message: '参数错误',
-    })
-    return
-  }
-  const ua = req.headers['user-agent']
-  key = key.trim()
-  try {
-    const license = await LicenseModel.findOne({
-      key,
-    })
-    if (!license) {
-      console.log(`【${currentTime()}】 ${key} key不存在`)
-      res.send({
-        code: 500,
-        data: null,
-        message: 'key不存在',
-      })
-      return
+const runVideoDanmu = async () => {
+  const result = await VideoModel.findAndCountAll({
+    where: {
+      status: null,
+    },
+  })
+  if (result.rows.length) {
+    const firstVideo = result.rows[0]
+    currentVideo = firstVideo
+    console.log(`${currentTime()} 发送弹幕给视频 ${firstVideo.title} - ${firstVideo.bvid}`)
+    const { title, cid, aid } = firstVideo
+    const accountsStr = (await ConfigDataModel.findOne({ key: 'userList' })).value
+    let accounts = []
+    try {
+      const accountsJSON = JSON.parse(accountsStr)
+      accounts = accountsJSON.filter((item) => item.danmu)
+    } catch (e) {
+      console.log(e)
     }
-    if (!license.deviceID) {
-      console.log(`【${currentTime()}】 ${key} key未绑定设备`)
+    const danmuList = (await ConfigDataModel.findOne({ key: 'danmuList' })).value
+    const danmuListJSON = JSON.parse(danmuList)
+    const danmuSendMode = (await ConfigDataModel.findOne({ key: 'danmuSendMode' })).value
+    console.log(`${currentTime()} 弹幕发送模式：${danmuSendMode}`)
+    const danmuInterval = (await ConfigDataModel.findOne({ key: 'danmuInterval' })).value
+    let danmiuConfig
+    let index = 0
+    if (danmuSendMode === 'queue') {
+      danmiuConfig = danmuListJSON[index]
+      index++
+    } else if (danmuSendMode === 'random') {
+      danmiuConfig = danmuListJSON[Math.floor(Math.random() * danmuListJSON.length)]
+    }
+    let danmuCount = 0
+    for (const account of accounts) {
+      console.log(`${currentTime()} 发送弹幕 ${account.mid} - ${account.nickname}`)
+      if (!danmiuConfig) {
+        break
+      }
+      const { mid, csrf, originCookie } = account
+      const { content: message, progress, fontsize, color, mode } = danmiuConfig
+      console.log(`${currentTime()} 发送弹幕 ${account.mid} - ${message}`)
       try {
-        await LicenseLogModel.add({
-          key,
-          deviceID,
-          type,
-          ua,
-          deviceCount: 1,
-          ip: clientIP,
+        await postDanmu({
+          mid,
+          csrf,
+          cookie: originCookie,
+          cid,
+          aid,
+          message,
+          progress: (progress || 0) * 1000,
+          fontsize,
+          color: hex2int(color?.replace('#', '')),
+          mode,
+        }).then(async (res) => {
+          if (res.data.code !== 0) {
+            throw new Error(res.data.message)
+          }
+          danmuCount++
+          console.log(`${currentTime()} 发送弹幕成功，更新状态 ${account.mid} - ${message} ${danmuCount}`)
+          await VideoModel.update({
+            id: firstVideo.id,
+            status: 1,
+            danmuCount: danmuCount,
+            postAt: new Date(),
+          })
         })
       } catch (err) {
-        console.log(`【${currentTime()}】 ${key} 添加日志失败`, err.message)
+        console.log(`${currentTime()} 发送弹幕失败，失败原因：${err.message} ${account.mid} - ${message}`)
+        await VideoModel.update({
+          id: firstVideo.id,
+          status: -1,
+          reason: err.message,
+        })
       }
-
-      await LicenseModel.update({
-        id: license.id,
-        deviceID,
-        // ua
-      })
-      res.send({
-        code: 20000,
-      })
-      return
+      console.log(`${currentTime()} 等待 ${danmuInterval} 秒后继续发送弹幕`)
+      await sleep(danmuInterval * 1000)
     }
-    if (license.deviceID === deviceID) {
-      if (type && license.type === type) {
-        console.log(`【${currentTime()}】 ${key} ${type} 授权成功`)
-        res.send({
-          code: 20000,
-        })
-        return
-      }
-      console.log(`【${currentTime()}】 ${key} 授权成功`)
-      res.send({
-        code: 20000,
-      })
-    } else {
-      console.log(`【${currentTime()}】 ${key} key已经绑定`)
-      const resetDeviceCount = license.resetDeviceCount || 0
-      const isIgnoreUAList = ['com.ss.android.ugc.aweme', 'Dalvik/2.1.0']
-      if (isIgnoreUAList.some((item) => ua.includes(item))) {
-        console.log(`【${currentTime()}】 ${key} ${ua} 虚假设备 不需要绑定设备`)
-        res.send({
-          code: 20000,
-        })
-        return
-      }
-      if (resetDeviceCount >= 6) {
-        console.log(`【${currentTime()}】 ${key} 设备绑定次数已经用完`)
-        res.send({
-          code: 500,
-          data: null,
-          message: '设备绑定次数已经用完，建议抖音扫码打开之后，不要切换设备。',
-        })
-        return
-      }
-      try {
-        await LicenseLogModel.add({
-          key,
-          deviceID,
-          type,
-          ua,
-          deviceCount: resetDeviceCount + 1,
-          ip: clientIP,
-        })
-      } catch (err) {
-        console.log(`【${currentTime()}】 ${key} 添加日志失败`, err.message)
-      }
-      console.log(
-        `【${currentTime()}】 ${key} 设备绑定次数加1, 新设备ID: ${deviceID}, 当前设备绑定次数：${resetDeviceCount + 1}, ua: ${ua}`
-      )
-      await LicenseModel.update({
-        id: license.id,
-        deviceID,
-        resetDeviceCount: resetDeviceCount + 1,
-        // ua: license.ua+'-------'+ua
-      })
-      res.send({
-        code: 20000,
-      })
-    }
-  } catch (err) {
-    console.log(`【${currentTime()}】 ${key} key绑定失败`, err.message)
-    res.send({
-      code: 500,
-      data: err.message,
-      message: '绑定失败',
-    })
+  } else {
+    console.log('没有需要处理的数据')
+    stop = true
+    await ConfigDataModel.update({ value: 'stop' }, { key: 'danmuRunStatus' })
   }
-})
+  if (!stop) {
+    const videoInterval = (await ConfigDataModel.findOne({ key: 'videoInterval' })) || 20
+    console.log(videoInterval, '===========打印的 ------ runVideoDanmu')
+    await sleep(videoInterval * 1000)
+    runVideoDanmu()
+  }
+}
 
-app.get('/license/reset', async (req, res) => {
-  const { key } = req.query
-  if (!key) {
+let timer = null
+
+app.get('/api/startDanmu', async (req, res) => {
+  if (!stop) {
     res.send({
       code: 500,
       data: null,
-      message: '参数错误',
+      message: '弹幕发送已开始',
     })
     return
   }
-  console.log(`【${currentTime()}】 开始重置 ${key}`)
-  const license = await LicenseModel.findOne({
-    key,
+  stop = false
+  runVideoDanmu()
+  await ConfigDataModel.update({ value: 'running' }, { key: 'danmuRunStatus' })
+  res.send({
+    code: 200,
+    data: 'running',
+    message: '弹幕发送已开始',
   })
-  if (license) {
-    LicenseModel.update({
-      id: license.id,
-      deviceID: null,
-      resetDeviceCount: 5,
+})
+
+app.get('/api/stopDanmu', async (req, res) => {
+  if (stop) {
+    res.send({
+      code: 500,
+      data: null,
+      message: '弹幕发送已暂停',
     })
-      .then((result) => {
-        res.send({
-          code: 200,
-          data: result,
-          message: '重置成功',
-        })
-      })
-      .catch((err) => {
-        res.send({
-          code: 500,
-          data: err.message,
-          message: '重置失败',
-        })
-      })
+    return
+  }
+  stop = true
+  await ConfigDataModel.update({ value: 'stop' }, { key: 'danmuRunStatus' })
+  res.send({
+    code: 200,
+    data: 'stop',
+    message: '弹幕发送已暂停',
+  })
+})
+
+app.get('/api/getDanmuStatus', async (req, res) => {
+  if (!stop) {
+    res.send({
+      code: 200,
+      data: {
+        status: 'running',
+        currentVideo,
+      },
+      message: '弹幕发送中',
+    })
   } else {
     res.send({
-      code: 500,
-      data: null,
-      message: 'key不存在',
+      code: 200,
+      data: {
+        status: 'stop',
+        currentVideo,
+      },
+      message: '弹幕发送已暂停',
     })
   }
 })
 
 app.get('/test', (req, res) => {
   res.send('test')
-})
-
-const Config = {
-  lastPushTime: 0,
-}
-const pushMsg = (text) => {
-  const now = Date.now()
-  if (now - Config.lastPushTime < 1000 * 60 * 60) {
-    return
-  }
-  Config.lastPushTime = now
-  axios.get(`https://express.xlzy520.cn/serviceWarn?text=${text}`)
-}
-
-const qqQueryParams = [
-  'cmd=1&pf=mds_qq_qb-__mds_sq_qb_-html5&pfkey=pfkey&from_h5=1&from_https=1&openid=D723FFB116AB3C10839202CEE0F66523&openkey=B29B47626183B0C358FDF21AB19B1BA6&session_id=openid&session_type=kp_accesstoken&qq_appid=101502376&offerId=1450000186&sandbox=&provide_uin=',
-]
-
-app.get('/queryQQNickname', (req, res) => {
-  const { qq } = req.query
-  if (!qq) {
-    res.send({
-      code: 500,
-      data: null,
-      message: '参数错误',
-    })
-    return
-  }
-  console.log('查询QQ昵称:', qq)
-  const randomIndex = Math.floor(Math.random() * qqQueryParams.length)
-  const qqQueryParam = qqQueryParams[randomIndex]
-
-  axios
-    .post('https://api.unipay.qq.com/v1/r/1450000186/wechat_query', qqQueryParam + qq, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Origin: 'https://pay.qq.com',
-        Referer: 'https://pay.qq.com/',
-      },
-    })
-    .then((response) => {
-      const data = response.data
-      console.log('查询QQ昵称:', qq, '结果：', data)
-      if (data.nick) {
-        res.send({
-          code: 200,
-          data: response.data,
-          message: '查询成功',
-        })
-      } else {
-        let randomNickname = nicknames[Math.floor(Math.random() * nicknames.length)]
-        randomNickname = randomNickname.split('、')[1]
-        console.log(`查询QQ昵称失败: ${data}, 显示一个随机昵称：${randomNickname}`)
-        pushMsg(`查询QQ昵称失败: ${data}`)
-        res.send({
-          code: 200,
-          data: {
-            nick: randomNickname,
-          },
-          message: '',
-        })
-      }
-    })
-    .catch((error) => {
-      res.send({
-        code: 500,
-        data: error,
-        message: '查询失败',
-      })
-    })
 })
 
 app.get('/Product/Index/47946', (req, res) => {

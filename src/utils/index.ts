@@ -170,7 +170,8 @@ export const sleep = (time: number) => {
 
 export const getBVIDFromURL = (url: string) => {
   if (url.includes('/')) {
-    return url.split('/').pop()
+    const pathname = new URL(url).pathname
+    return pathname.split('/')[2]
   }
   return url
 }
@@ -197,4 +198,16 @@ export const deleteVideo = async (id) => {
 
 export const addVideo = async (video) => {
   return service.post(`/api/addVideo`, video)
+}
+
+export const startDanmu = async () => {
+  return service.get(`/api/startDanmu`)
+}
+
+export const stopDanmu = async () => {
+  return service.get(`/api/stopDanmu`)
+}
+
+export const getDanmuStatus = async () => {
+  return service.get(`/api/getDanmuStatus`)
 }

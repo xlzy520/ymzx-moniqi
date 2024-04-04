@@ -5,6 +5,7 @@ import {
   Form,
   FormItem,
   Input,
+  InputNumber,
   Message,
   Modal,
   Popconfirm,
@@ -18,7 +19,19 @@ import {
 import uuid4 from 'uuidjs'
 
 import { uniqBy } from 'lodash'
-import { getLocalValue, setLocalValue, getBVIDFromURL, getVideoInfo, addVideo, deleteVideo, getVideoList } from '@/utils'
+import {
+  getLocalValue,
+  setLocalValue,
+  getBVIDFromURL,
+  getVideoInfo,
+  addVideo,
+  deleteVideo,
+  getVideoList,
+  startDanmu,
+  stopDanmu,
+  getDanmuStatus,
+} from '@/utils'
+import dayjs from 'dayjs'
 
 const loading = ref(false)
 
@@ -31,11 +44,13 @@ const form = ref({
 const accessKey = ref('')
 const mode = ref('queue')
 const danmuInterval = ref(3)
+const videoInterval = ref(20)
+const currentRunStatus = ref('stop')
 
 const getList = () => {
   getVideoList().then((res) => {
     console.log(res, '===========打印的 ------ getVideoList')
-    data.value = res
+    data.value = res.sort((a, b) => a.status - b.status)
   })
 }
 
@@ -95,9 +110,52 @@ const remove = (record) => {
   })
 }
 
+const changeVideoInterval = () => {
+  setLocalValue('videoInterval', videoInterval.value)
+}
+
+const currentVideo = ref({})
+
+const asyncRunStatus = () => {
+  getDanmuStatus().then((res) => {
+    currentRunStatus.value = res.data.status
+    currentVideo.value = res.data.currentVideo || { title: '无' }
+  })
+}
+
+const openBilibili = (bvid) => {
+  const isMobile = navigator.userAgent.match(/(iPhone|iPod|Android|ios)/i)
+  if (isMobile) {
+    window.open(`bilibili://video/${bvid}`)
+    return
+  }
+  window.open(`https://www.bilibili.com/video/${bvid}`)
+}
+
+let runInterval = null
+
+const startRun = () => {
+  startDanmu().then((res) => {
+    Message.success(res.message)
+    asyncRunStatus()
+  })
+}
+
+const stopRun = () => {
+  stopDanmu().then((res) => {
+    Message.success(res.message)
+    asyncRunStatus()
+  })
+}
+
 onMounted(() => {
   getList()
   getMode()
+  asyncRunStatus()
+  runInterval = setInterval(() => {
+    asyncRunStatus()
+    getList()
+  }, 1000 * 10)
 })
 
 const danmuModeMap = {
@@ -117,12 +175,24 @@ const danmuSendModeMap = {
   <div class="w-full p-2">
     <div class="danmu-table">
       <div class="mb-2 layout-items-center">
+        <Button type="primary" status="success" class="mr-4" @click="showAddModal">新增视频</Button>
         <div class="layout-items-center">
-          <Tag color="#fb7299">共 {{ data.length }}条视频</Tag>
+          <div class="mr-2 whitespace-nowrap">视频间隔时间(秒)：</div>
+          <InputNumber v-model="videoInterval" @change="changeVideoInterval" :precision="2" />
         </div>
-        <Button type="primary" status="success" size="mini" class="ml-4" @click="showAddModal">新增</Button>
       </div>
       <div class="mb-2 layout-items-center">
+        <div class="mr-4">
+          <a-button v-if="currentRunStatus === 'stop'" type="primary" @click="startRun">开启自动弹幕</a-button>
+          <a-button v-else type="primary" status="danger" @click="stopRun">关闭自动弹幕</a-button>
+        </div>
+        <div class="layout-items-center mr-4">
+          <Tag color="#fb7299">共 {{ data.length }}条视频</Tag>
+        </div>
+        <div class="mr-2 whitespace-nowrap flex items-center" @click="openBilibili(currentVideo.bvid)">
+          <div class="mr-2">当前视频：</div>
+          <Tag color="blue">{{ currentVideo.title }}</Tag>
+        </div>
         <div class="mr-2">当前弹幕发送方式：</div>
         <Tag>{{ danmuSendModeMap[mode] }}</Tag>
         <div class="mr-2 ml-4">当前弹幕发送间隔：</div>
@@ -130,21 +200,32 @@ const danmuSendModeMap = {
       </div>
       <Table :sticky-header="100" :scroll="{ y: '365px' }" row-key="id" :data="data" :pagination="false">
         <template #columns>
-          <TableColumn title="标题" data-index="title" :width="300" ellipsis tooltip />
+          <TableColumn title="标题" data-index="title" :width="300" ellipsis tooltip>
+            <template #cell="{ record }">
+              <span class="text-blue-500 underline cursor-pointer" @click="openBilibili(record.bvid)">{{ record.title }}</span>
+            </template>
+          </TableColumn>
           <TableColumn title="状态" data-index="color" :width="100">
             <template #cell="{ record }">
-              <div :style="{ background: record.color, width: '20px', height: '20px' }" />
+              <a-tag v-if="!record.status" color="gray">未开始</a-tag>
+              <a-tag v-else-if="record.status === '1'" color="green">已发送</a-tag>
+              <a-tag v-else color="red">发送失败</a-tag>
             </template>
           </TableColumn>
 
-          <TableColumn title="字号" data-index="fontSize" :width="80" />
-          <TableColumn title="位置" data-index="mode" :width="80">
+          <TableColumn title="提示" data-index="reason" :width="100" />
+          <TableColumn title="发送数量" data-index="danmuCount" :width="100" />
+          <!--          <TableColumn title="位置" data-index="mode" :width="80">-->
+          <!--            <template #cell="{ record }">-->
+          <!--              {{ danmuModeMap[record.mode] }}-->
+          <!--            </template>-->
+          <!--          </TableColumn>-->
+
+          <TableColumn title="发送时间" data-index="postAt" :width="120">
             <template #cell="{ record }">
-              {{ danmuModeMap[record.mode] }}
+              {{ record.postAt ? dayjs(record.postAt).format('YYYY-MM-DD HH:mm:ss') : '' }}
             </template>
           </TableColumn>
-
-          <TableColumn title="发送时间(秒)" data-index="progress" :width="100" />
           <!--          <TableColumn title="mid" data-index="mid" width="100" align="center" /> -->
           <TableColumn title="操作" width="200">
             <template #cell="{ record }">

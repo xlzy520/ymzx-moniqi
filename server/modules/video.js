@@ -14,6 +14,14 @@ const Videos = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
+    aid: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+    },
+    cid: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+    },
     title: {
       type: DataTypes.STRING(100),
       allowNull: true,
@@ -25,6 +33,17 @@ const Videos = sequelize.define(
     danmuCount: {
       type: DataTypes.STRING(100),
       allowNull: true,
+    },
+    reason: {
+      type: DataTypes.STRING(200),
+      allowNull: true,
+    },
+    originJSON: {
+      type: DataTypes.TEXT(),
+      allowNull: true,
+    },
+    postAt: {
+      type: DataTypes.DATE,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -73,22 +92,23 @@ class LicenseModel {
   }
 
   // 分页查询
-  static async findAndCountAll({ offset = 0, limit = 10, name = '', startTime = '', endTime = '' }) {
-    const where = {}
+  static async findAndCountAll({ offset = 0, limit = 10, where, startTime = '', endTime = '' }) {
     return await Videos.findAndCountAll({
-      where: {
-        // key: {
-        //   [Op.like]: name ? `%${name}%` : '%%',
-        // },
-        // createdAt: {
-        //   [Op.between]: [
-        //     dayjs(startTime).toDate(), // 将 startTime 转换为日期对象
-        //     dayjs(endTime).toDate(), // 将 endTime 转换为日期对象
-        //   ],
-        // },
-      },
-      // offset,
-      // limit,
+      // where: {
+      // key: {
+      //   [Op.like]: name ? `%${name}%` : '%%',
+      // },
+      // createdAt: {
+      //   [Op.between]: [
+      //     dayjs(startTime).toDate(), // 将 startTime 转换为日期对象
+      //     dayjs(endTime).toDate(), // 将 endTime 转换为日期对象
+      //   ],
+      // },
+      // },
+      where,
+      offset,
+      limit,
+      order: [['createdAt', 'DESC']],
     })
   }
 }

@@ -137,7 +137,7 @@ const danmuModeMap = {
       <div class="mb-2 layout-items-center">
         <div class="mr-2">弹幕发送方式：</div>
         <RadioGroup v-model="mode" @change="changeDanmuSendMode">
-          <Radio value="fixed">固定话术(取输入框)</Radio>
+          <!--          <Radio value="fixed">固定话术(取输入框)</Radio>-->
           <Radio value="queue">顺序话术，顺序发</Radio>
           <Radio value="random">随机话术，随机发</Radio>
         </RadioGroup>
