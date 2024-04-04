@@ -39,7 +39,7 @@ export default {
   'menu.user': '个人中心',
   'navbar.docs': '文档中心',
   'navbar.action.locale': '切换为中文',
-  'menu.account': '账号管理',
+  'menu.account': '二维码链接管理',
   'menu.reply': '评论管理',
   'menu.danmu': '弹幕管理',
   'menu.video': '视频管理',

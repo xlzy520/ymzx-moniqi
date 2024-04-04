@@ -35,7 +35,7 @@ const router = createRouter({
         {
           path: '/home',
           name: 'home',
-          component: () => import('@/views/home/index.vue'),
+          component: () => import('@/views/home/videoList.vue'),
           meta: {
             locale: 'menu.account',
             requiresAuth: false,
@@ -52,26 +52,26 @@ const router = createRouter({
         //     icon: 'icon-list',
         //   },
         // },
-        {
-          path: '/danmu',
-          name: 'danmu',
-          component: () => import('@/views/home/danmuList.vue'),
-          meta: {
-            locale: 'menu.danmu',
-            requiresAuth: false,
-            icon: 'icon-list',
-          },
-        },
-        {
-          path: '/video',
-          name: 'video',
-          component: () => import('@/views/home/videoList.vue'),
-          meta: {
-            locale: 'menu.video',
-            requiresAuth: false,
-            icon: 'icon-list',
-          },
-        },
+        // {
+        //   path: '/danmu',
+        //   name: 'danmu',
+        //   component: () => import('@/views/home/danmuList.vue'),
+        //   meta: {
+        //     locale: 'menu.danmu',
+        //     requiresAuth: false,
+        //     icon: 'icon-list',
+        //   },
+        // },
+        // {
+        //   path: '/video',
+        //   name: 'video',
+        //   component: () => import('@/views/home/videoList.vue'),
+        //   meta: {
+        //     locale: 'menu.video',
+        //     requiresAuth: false,
+        //     icon: 'icon-list',
+        //   },
+        // },
       ],
     },
     {

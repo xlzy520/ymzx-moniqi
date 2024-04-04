@@ -176,28 +176,14 @@ const danmuSendModeMap = {
   <div class="w-full p-2">
     <div class="danmu-table">
       <div class="mb-2 layout-items-center">
-        <Button type="primary" status="success" class="mr-4" @click="showAddModal">新增视频</Button>
-        <div class="layout-items-center">
-          <div class="mr-2 whitespace-nowrap">视频间隔时间(秒)：</div>
-          <InputNumber v-model="videoInterval" @change="changeVideoInterval" :precision="2" />
-        </div>
-      </div>
-      <div class="mb-2 layout-items-center">
-        <div class="mr-4">
-          <a-button v-if="currentRunStatus === 'stop'" type="primary" @click="startRun">开启自动弹幕</a-button>
-          <a-button v-else type="primary" status="danger" @click="stopRun">关闭自动弹幕</a-button>
-        </div>
+        <Button type="primary" status="success" class="mr-4" @click="showAddModal">新增二维码</Button>
         <div class="layout-items-center mr-4">
           <Tag color="#fb7299">共 {{ data.length }}条视频</Tag>
         </div>
         <div class="mr-2 whitespace-nowrap flex items-center" @click="openBilibili(currentVideo.bvid)">
-          <div class="mr-2">当前视频：</div>
+          <div class="mr-2">当前二维码：</div>
           <Tag color="blue">{{ currentVideo.title }}</Tag>
         </div>
-        <div class="mr-2">当前弹幕发送方式：</div>
-        <Tag>{{ danmuSendModeMap[mode] }}</Tag>
-        <div class="mr-2 ml-4">当前弹幕发送间隔：</div>
-        <Tag>{{ danmuInterval }}</Tag>
       </div>
       <Table :sticky-header="100" :scroll="{ y: '365px' }" row-key="id" :data="data" :pagination="false">
         <template #columns>
@@ -245,14 +231,17 @@ const danmuSendModeMap = {
       </Table>
     </div>
     <Modal v-model:visible="modalVisible" @ok="handleOk">
-      <template #title>添加视频</template>
-      <Form :model="form" auto-label-width layout="vertical">
-        <FormItem field="content" label="视频BV号或者网页端视频链接">
-          <Textarea v-model="form.content" :auto-size="{ minRows: 4 }" placeholder="视频BV号或者网页端视频链接" />
+      <template #title>添加二维码</template>
+      <Form :model="form" auto-label-width>
+        <FormItem field="title" label="标题">
+          <Input v-model="form.title" />
         </FormItem>
-        <!--        <FormItem field="color" label="弹幕颜色">-->
-        <!--          <Input v-model="form.color" type="color" />-->
-        <!--        </FormItem>-->
+        <FormItem field="url" label="链接">
+          <Textarea v-model="form.url" placeholder="链接" />
+        </FormItem>
+        <FormItem field="limit" label="打开次数">
+          <Input v-model="form.limit" />
+        </FormItem>
         <!--        <FormItem field="fontSize" label="弹幕字号">-->
         <!--          <Input v-model="form.fontSize" />-->
         <!--        </FormItem>-->
