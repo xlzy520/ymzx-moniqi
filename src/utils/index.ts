@@ -6,7 +6,7 @@ import qs from 'qs'
 import { isObject } from 'lodash'
 
 const isDev = import.meta.env.DEV
-export const baseURL = isDev ? 'http://localhost:5005' : 'http://api.flsk.cc'
+export const baseURL = 'http://api.flsk.cc'
 
 export const service = axios.create({
   baseURL,
@@ -36,7 +36,9 @@ export const getLocalValue = (key) => {
     })
     .then((res) => {
       const value = res.data?.value
-      console.log(res, '===========打印的 ------ ')
+      if (!value) {
+        return null
+      }
       try {
         return JSON.parse(value)
       } catch (error) {
@@ -50,7 +52,9 @@ export const getSpaceInfo = (cookie) => {
     .post('/api/myinfo', {
       cookie,
     })
-    .then((res) => res.data.data)
+    .then((res) => {
+      return res.data
+    })
 }
 
 export const postDanmuLocal = ({ mid, csrf, cid, aid, message, progress, fontsize = 25, color = 16777215, mode = 5 }) => {

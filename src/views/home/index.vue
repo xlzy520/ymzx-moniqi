@@ -71,7 +71,7 @@ const handleCurrentNickname = async (mid) => {
 
 const getList = async () => {
   loading.value = true
-  let userList = await getAccountList()
+  let userList = (await getAccountList()) || []
   data.value = userList
   pagination.value.total = userList.length
   ckImportStartIndex.value = data.value.length
@@ -85,19 +85,26 @@ const checkStatus = async (list) => {
     index++
     try {
       const simpleCookie = getSimpleCookie(account)
-      const spaceInfo = await getSpaceInfo(simpleCookie)
-      console.log(spaceInfo, '===========打印的 ------ checkStatus')
-      await saveOrUpdateUser({
-        mid: String(account.mid),
-        face: spaceInfo.face,
-        nickname: spaceInfo.name,
-        silence: spaceInfo.silence,
-        level_exp: spaceInfo.level_exp,
-        level: spaceInfo.level,
-        coins: spaceInfo.coins,
-        status: spaceInfo.silence === 1 ? '已封禁' : '正常',
-        follower: spaceInfo.follower,
-      })
+      const spaceInfoData = await getSpaceInfo(simpleCookie)
+      if (spaceInfoData.code !== 0) {
+        await saveOrUpdateUser({
+          mid: String(account.mid),
+          status: '已掉线',
+        })
+      } else {
+        const spaceInfo = spaceInfoData.data
+        await saveOrUpdateUser({
+          mid: String(account.mid),
+          face: spaceInfo.face,
+          nickname: spaceInfo.name,
+          silence: spaceInfo.silence,
+          level_exp: spaceInfo.level_exp,
+          level: spaceInfo.level,
+          coins: spaceInfo.coins,
+          status: spaceInfo.silence === 1 ? '已封禁' : '正常',
+          follower: spaceInfo.follower,
+        })
+      }
       Message.success(`用户【${account.mid}】数据更新成功`)
       if (index % 4 === 0) {
         getList()
@@ -551,9 +558,7 @@ defineExpose({
         </div>
       </div>
     </div>
-    <Modal v-model:visible="visible" title="视频BV号" @ok="onLoginAndViewVideo">
-      <Input v-model="videoBV" placeholder="请输入视频BV号，例如BV1MP4y1D7jJ" />
-    </Modal>
+
     <Modal v-model:visible="checkStatusStartIndexVisible" title="一键检查状态开始位置" @ok="checkStatus">
       <Input v-model="checkStatusStartIndex" placeholder="请输入从第几个账号开始检查" />
     </Modal>
