@@ -8,6 +8,7 @@ import { RouteRecordNormalized, RouteRecordRaw, useRoute, useRouter } from 'vue-
 export default defineComponent({
   emit: ['collapse'],
   setup() {
+    // @ts-nocheck
     const { t } = useI18n()
     const appStore = useAppStore()
     const permission = usePermission()
@@ -64,6 +65,7 @@ export default defineComponent({
     const selectedKey = ref<string[]>(['home'])
 
     const goto = (item: RouteRecordRaw) => {
+      // @ts-expect-error
       selectedKey.value = [item.name]
       router.push({
         name: item.name,

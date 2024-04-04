@@ -6,7 +6,6 @@ import usePermission from '@/hooks/permission'
 import { useUserStore } from '@/store'
 import PageLayout from '@/layout/page-layout.vue'
 import { isLogin } from '@/utils/auth'
-import Login from './modules/login'
 import appRoutes from './modules'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration

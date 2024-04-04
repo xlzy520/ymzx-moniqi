@@ -6,21 +6,21 @@ export default mergeConfig(
   {
     mode: 'production',
     plugins: [configArcoResolverPlugin()],
-    build: {
-      chunkSizeWarningLimit: 20480,
-      reportCompressedSize: false,
-      rollupOptions: {
-        onwarn: () => {},
-        output: {
-          chunkFileNames: 'static/js/[name]-[hash].js',
-          entryFileNames: 'static/js/[name]-[hash].js',
-          assetFileNames: 'static/[ext]/[name]-[hash].[ext]',
-        },
-      },
-      minify: 'esbuild',
-      target: 'es2015',
-      sourcemap: false,
-    },
+    // build: {
+    //   chunkSizeWarningLimit: 20480,
+    //   reportCompressedSize: false,
+    //   rollupOptions: {
+    //     onwarn: () => {},
+    //     output: {
+    //       chunkFileNames: 'static/js/[name]-[hash].js',
+    //       entryFileNames: 'static/js/[name]-[hash].js',
+    //       assetFileNames: 'static/[ext]/[name]-[hash].[ext]',
+    //     },
+    //   },
+    //   minify: 'esbuild',
+    //   target: 'es2015',
+    //   sourcemap: false,
+    // },
   },
   baseConig
 )

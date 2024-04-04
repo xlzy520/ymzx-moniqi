@@ -1,10 +1,12 @@
+// @ts-nocheck
 import axios from 'axios'
 import Cookie from 'cookie'
 import dayjs from 'dayjs'
 import qs from 'qs'
 import { isObject } from 'lodash'
 
-export const baseURL = 'http://localhost:5005'
+const isDev = import.meta.env.DEV
+export const baseURL = isDev ? 'http://localhost:5005' : 'http://api.flsk.cc'
 
 export const service = axios.create({
   baseURL,

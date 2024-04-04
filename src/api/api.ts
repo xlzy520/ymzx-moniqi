@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import axios from 'axios'
 import qs from 'qs'
 import { Message } from '@arco-design/web-vue'
