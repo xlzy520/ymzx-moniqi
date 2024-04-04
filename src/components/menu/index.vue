@@ -8,7 +8,6 @@ import { RouteRecordNormalized, RouteRecordRaw, useRoute, useRouter } from 'vue-
 export default defineComponent({
   emit: ['collapse'],
   setup() {
-    // @ts-nocheck
     const { t } = useI18n()
     const appStore = useAppStore()
     const permission = usePermission()
