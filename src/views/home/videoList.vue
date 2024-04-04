@@ -39,7 +39,7 @@ const data = ref([])
 const accountList = ref([])
 const modalVisible = ref(false)
 const form = ref({
-  content: 'BV1TH4y1p7mk',
+  content: '',
 })
 const accessKey = ref('')
 const mode = ref('queue')
@@ -86,6 +86,7 @@ const handleOk = async () => {
   addVideo(item).then((res) => {
     getList()
     Message.success('保存成功')
+    form.value.content = ''
   })
 }
 
@@ -245,9 +246,9 @@ const danmuSendModeMap = {
     </div>
     <Modal v-model:visible="modalVisible" @ok="handleOk">
       <template #title>添加视频</template>
-      <Form :model="form" auto-label-width>
-        <FormItem field="content" label="视频BV号">
-          <Textarea v-model="form.content" :auto-size="{ minRows: 4 }" placeholder="请粘贴视频BV号" />
+      <Form :model="form" auto-label-width layout="vertical">
+        <FormItem field="content" label="视频BV号或者网页端视频链接">
+          <Textarea v-model="form.content" :auto-size="{ minRows: 4 }" placeholder="视频BV号或者网页端视频链接" />
         </FormItem>
         <!--        <FormItem field="color" label="弹幕颜色">-->
         <!--          <Input v-model="form.color" type="color" />-->
@@ -270,9 +271,4 @@ const danmuSendModeMap = {
   </div>
 </template>
 
-<style lang="css">
-.danmu-table {
-  //height: 500px;
-  //margin-bottom: 20px;
-}
-</style>
+<style lang="css"></style>
