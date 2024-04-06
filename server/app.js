@@ -317,31 +317,32 @@ const runVideoDanmu = async () => {
     } catch (e) {
       console.log(e)
     }
+
+    if (!accounts.length) {
+      console.log('没有可用的账号')
+      stop = true
+      return
+    }
     const danmuList = (await ConfigDataModel.findOne({ key: 'danmuList' })).value
     const danmuListJSON = JSON.parse(danmuList)
     const danmuSendMode = (await ConfigDataModel.findOne({ key: 'danmuSendMode' }))?.value || 'queue'
     console.log(`${currentTime()} 弹幕发送模式：${danmuSendMode}`)
     const danmuInterval = (await ConfigDataModel.findOne({ key: 'danmuInterval' }))?.value || 0.5
     let danmiuConfig
-    let index = 0
-    if (danmuSendMode === 'queue') {
-      danmiuConfig = danmuListJSON[index]
-      index++
-    } else if (danmuSendMode === 'random') {
-      danmiuConfig = danmuListJSON[Math.floor(Math.random() * danmuListJSON.length)]
-    }
     let danmuCount = 0
-    if (!accounts.length) {
-      console.log('没有可用的账号')
-      stop = true
-      return
-    }
-
+    let index = 0
     for (const account of accounts) {
       console.log(`${currentTime()} 发送弹幕 ${account.mid} - ${account.nickname}`)
+      if (danmuSendMode === 'queue') {
+        danmiuConfig = danmuListJSON[index]
+        index++
+      } else if (danmuSendMode === 'random') {
+        danmiuConfig = danmuListJSON[Math.floor(Math.random() * danmuListJSON.length)]
+      }
       if (!danmiuConfig) {
         break
       }
+
       const { mid, csrf, originCookie } = account
       const { content: message, progress, fontsize, color, mode } = danmiuConfig
       console.log(`${currentTime()} 发送弹幕 ${account.mid} - ${message}`)

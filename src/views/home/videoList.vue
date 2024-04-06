@@ -202,7 +202,7 @@ const danmuSendModeMap = {
         <div class="mr-2 ml-4">当前弹幕发送间隔：</div>
         <Tag>{{ danmuInterval }}</Tag>
       </div>
-      <Table :sticky-header="100" :scroll="{ y: '365px' }" row-key="id" :data="data" :pagination="false">
+      <Table :sticky-header="100" :scroll="{ y: '500px' }" row-key="id" :data="data" :pagination="false">
         <template #columns>
           <TableColumn title="标题" data-index="title" :width="300" ellipsis tooltip>
             <template #cell="{ record }">
@@ -246,6 +246,9 @@ const danmuSendModeMap = {
           </TableColumn>
         </template>
       </Table>
+      <div class="mt-4">
+        <Button type="primary" status="success" class="mr-4" @click="showAddModal">新增视频</Button>
+      </div>
     </div>
     <Modal v-model:visible="modalVisible" @ok="handleOk">
       <template #title>添加视频</template>

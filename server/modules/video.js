@@ -106,8 +106,8 @@ class LicenseModel {
       // },
       // },
       where,
-      offset,
-      limit,
+      // offset,
+      // limit,
       order: [['createdAt', 'DESC']],
     })
   }
