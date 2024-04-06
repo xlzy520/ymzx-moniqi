@@ -18,6 +18,8 @@ const sequelize = new Sequelize('bilidanmu', 'bilidanmu', 'Rz7F87rDeGZCkt3N', {
     idle: 10000,
   },
   timezone: '+08:00', //东八时区
+  // 关闭日志
+  logging: isDev ? console.log : false,
 })
 
 module.exports = sequelize

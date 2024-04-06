@@ -389,7 +389,7 @@ const runVideoDanmu = async () => {
   }
   if (!stop) {
     const videoInterval = (await ConfigDataModel.findOne({ key: 'videoInterval' }))?.value || 20
-    console.log(videoInterval, '===========打印的 ------ runVideoDanmu')
+    console.log(`${currentTime()} 等待 ${videoInterval} 秒后继续发送弹幕`)
     await sleep(videoInterval * 1000)
     runVideoDanmu()
   }
