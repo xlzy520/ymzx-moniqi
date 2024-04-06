@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "vite --config ./config/vite.config.dev.ts",
     "obfuscator": "node obfuscator.cjs",
-    "build": "vue-tsc --noEmit --skipLibCheck && vite build --config ./config/vite.config.prod.ts",
+    "build": "vue-tsc --noEmit --skipLibCheck && vite build --config ./config/vite.config.prod.ts && node obfuscator.cjs",
     "lint-staged": "npx lint-staged",
     "build:normal": "vite build --config ./config/vite.config.prod.ts"
   },

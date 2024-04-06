@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-full">
-    <div v-if="true" class="jcc-container" @click="showGiftImg">
+    <div v-if="hasAuth" class="jcc-container" @click="showGiftImg">
       <video src="https://zhibi-share.oss-cn-shanghai.aliyuncs.com/202404061228.mp4" autoplay loop></video>
       <!--      <video src="https://zhibi-share.oss-cn-shanghai.aliyuncs.com/mmexport1712371678046.mp4" autoplay loop></video>-->
       <div v-if="showGift" class="img-container">

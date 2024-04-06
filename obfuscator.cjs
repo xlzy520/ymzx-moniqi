@@ -12,7 +12,7 @@ const obfuscatorOptions = {
   selfDefending: true,
   // renameGlobals: true,
   unicodeEscapeSequence: true,
-  domainLock: ['hpjy-1253419200.cos-website.ap-nanjing.myqcloud.com'],
+  domainLock: ['jcc-play-1253419200.cos-website.ap-nanjing.myqcloud.com'],
   domainLockRedirectUrl: 'https://www.baidu.com',
 };
 
