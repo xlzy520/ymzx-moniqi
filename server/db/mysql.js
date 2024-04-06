@@ -6,8 +6,8 @@ const isDev = process.env.mode === 'dev'
 /**
  * 数据库名称, 账号，密码
  */
-const sequelize = new Sequelize('bili_danmu', 'root', 'xlzy5200', {
-  host: 'localhost',
+const sequelize = new Sequelize('bilidanmu', 'bilidanmu', 'Rz7F87rDeGZCkt3N', {
+  host: '45.142.158.158',
   dialect: 'mysql',
   operatorsAliases: false,
 

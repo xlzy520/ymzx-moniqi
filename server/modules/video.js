@@ -38,10 +38,6 @@ const Videos = sequelize.define(
       type: DataTypes.STRING(200),
       allowNull: true,
     },
-    originJSON: {
-      type: DataTypes.TEXT(),
-      allowNull: true,
-    },
     postAt: {
       type: DataTypes.DATE,
     },

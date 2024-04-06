@@ -155,13 +155,12 @@ app.get('/api/getVideoInfo', async (req, res) => {
 })
 
 app.post('/api/addVideo', async (req, res) => {
-  const { bvid, aid, cid, title, originJSON } = req.body
+  const { bvid, aid, cid, title } = req.body
   const data = {
     bvid,
     aid,
     cid,
     title,
-    originJSON,
   }
 
   const videoData = await VideoModel.findOne({
@@ -259,31 +258,37 @@ app.post('/api/deleteVideoList', (req, res) => {
 
 // 分页查询
 app.get('/api/getVideoList', (req, res) => {
+  console.log(4444, '===========打印的 ------ ')
   const { pageSize, pageNum, name, phone, fruit, startTime, endTime, key } = req.query
-  VideoModel.findAndCountAll({
-    // offset: Number(pageSize) * (Number(pageNum) - 1),
-    // limit: Number(pageSize),
-    // name: name || '',
-    // phone: phone || '',
-    // fruit: phone || '',
-    // startTime: startTime || '',
-    // endTime: endTime || '',
-  })
-    .then((result) => {
-      res.send({
-        code: 200,
-        data: result,
-        message: '查询成功',
-      })
+  try {
+    VideoModel.findAndCountAll({
+      // offset: Number(pageSize) * (Number(pageNum) - 1),
+      // limit: Number(pageSize),
+      // name: name || '',
+      // phone: phone || '',
+      // fruit: phone || '',
+      // startTime: startTime || '',
+      // endTime: endTime || '',
     })
-    .catch((err) => {
-      console.log(err, '===========打印的 ------ ')
-      res.send({
-        code: 500,
-        data: err,
-        message: '查询失败',
+      .then((result) => {
+        console.log(result, '===========打印的 ------ 12321312')
+        res.send({
+          code: 200,
+          data: result,
+          message: '查询成功',
+        })
       })
-    })
+      .catch((err) => {
+        console.log(err, '===========打印的 ------ ')
+        res.send({
+          code: 500,
+          data: err,
+          message: '查询失败',
+        })
+      })
+  } catch (err) {
+    console.log(err, '===========打印的 ------ ')
+  }
 })
 
 const postDanmu = ({ mid, csrf, cookie, cid, aid, message, progress, fontsize = 25, color = 16777215, mode = 5 }) => {

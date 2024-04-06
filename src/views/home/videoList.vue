@@ -81,7 +81,6 @@ const handleOk = async () => {
   }
   const item = {
     ...videoInfo,
-    originJSON: JSON.stringify(videoInfo),
   }
   addVideo(item).then((res) => {
     getList()
