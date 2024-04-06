@@ -1,7 +1,7 @@
 <template>
   <div class="w-full h-full">
     <div v-if="hasAuth" class="jcc-container" @click="showGiftImg">
-      <video src="https://zhibi-share.oss-cn-shanghai.aliyuncs.com/202404061228.mp4" autoplay loop></video>
+      <video src="https://zhibi-share.oss-cn-shanghai.aliyuncs.com/RPReplay_Final1712368486.MP4" autoplay loop></video>
       <!--      <video src="https://zhibi-share.oss-cn-shanghai.aliyuncs.com/mmexport1712371678046.mp4" autoplay loop></video>-->
       <div v-if="showGift" class="img-container">
         <img
@@ -207,7 +207,7 @@ onMounted(() => {
         if (!viaBrowserDialog) {
           Modal.info({
             title: '温馨提示',
-            content: '将链接转成二维码，QQ扫码打开，效果更佳',
+            content: '建议开播之前，先走一遍流程，调整一下浏览器高度宽度进行适配',
             okText: '知道了',
             onOk(e) {
               localStorage.setItem('viaBrowserDialog', 'true')
