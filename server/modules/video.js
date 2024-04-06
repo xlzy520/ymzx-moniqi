@@ -91,6 +91,17 @@ class LicenseModel {
     })
   }
 
+  // 批量删除
+  static async deleteAll(data) {
+    return await Videos.destroy({
+      where: {
+        id: {
+          [Op.in]: data.ids,
+        },
+      },
+    })
+  }
+
   // 分页查询
   static async findAndCountAll({ offset = 0, limit = 10, where, startTime = '', endTime = '' }) {
     return await Videos.findAndCountAll({

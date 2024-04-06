@@ -237,6 +237,26 @@ app.post('/api/deleteVideo', (req, res) => {
     })
 })
 
+// 批量删除
+app.post('/api/deleteVideoList', (req, res) => {
+  const { idList } = req.body
+  VideoModel.deleteAll(idList)
+    .then((result) => {
+      res.send({
+        code: 200,
+        data: result,
+        message: '删除成功',
+      })
+    })
+    .catch((err) => {
+      res.send({
+        code: 500,
+        data: null,
+        message: `删除失败, ${err.message}`,
+      })
+    })
+})
+
 // 分页查询
 app.get('/api/getVideoList', (req, res) => {
   const { pageSize, pageNum, name, phone, fruit, startTime, endTime, key } = req.query

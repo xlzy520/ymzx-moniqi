@@ -149,6 +149,15 @@ const stopRun = () => {
   })
 }
 
+const deleteCompleteVideo = () => {
+  const videoList = data.value.filter((item) => item.status === '1')
+  console.log(videoList, data.value)
+  Promise.all(videoList.map((item) => deleteVideo(item.id))).then(() => {
+    getList()
+    Message.success('删除成功')
+  })
+}
+
 onMounted(() => {
   getList()
   getMode()
@@ -200,7 +209,8 @@ const danmuSendModeMap = {
         <div class="mr-2">当前弹幕发送方式：</div>
         <Tag>{{ danmuSendModeMap[mode] }}</Tag>
         <div class="mr-2 ml-4">当前弹幕发送间隔：</div>
-        <Tag>{{ danmuInterval }}</Tag>
+        <Tag class="mr-2">{{ danmuInterval }}</Tag>
+        <a-button type="primary" status="danger" @click="deleteCompleteVideo">清空已完成的视频</a-button>
       </div>
       <Table :sticky-header="100" :scroll="{ y: '500px' }" row-key="id" :data="data" :pagination="false">
         <template #columns>
