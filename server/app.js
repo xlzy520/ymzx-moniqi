@@ -258,7 +258,6 @@ app.post('/api/deleteVideoList', (req, res) => {
 
 // 分页查询
 app.get('/api/getVideoList', (req, res) => {
-  console.log(4444, '===========打印的 ------ ')
   const { pageSize, pageNum, name, phone, fruit, startTime, endTime, key } = req.query
   try {
     VideoModel.findAndCountAll({
@@ -271,7 +270,6 @@ app.get('/api/getVideoList', (req, res) => {
       // endTime: endTime || '',
     })
       .then((result) => {
-        console.log(result, '===========打印的 ------ 12321312')
         res.send({
           code: 200,
           data: result,
@@ -279,7 +277,6 @@ app.get('/api/getVideoList', (req, res) => {
         })
       })
       .catch((err) => {
-        console.log(err, '===========打印的 ------ ')
         res.send({
           code: 500,
           data: err,

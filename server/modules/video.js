@@ -92,7 +92,7 @@ class LicenseModel {
     return await Videos.destroy({
       where: {
         id: {
-          [Op.in]: data.ids,
+          [Op.in]: data,
         },
       },
     })

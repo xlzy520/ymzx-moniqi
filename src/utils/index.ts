@@ -202,6 +202,10 @@ export const deleteVideo = async (id) => {
   return service.post(`/api/deleteVideo`, { id })
 }
 
+export const deleteVideoList = async (idList) => {
+  return service.post(`/api/deleteVideoList`, { idList })
+}
+
 export const addVideo = async (video) => {
   return service.post(`/api/addVideo`, video)
 }

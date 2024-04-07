@@ -30,6 +30,8 @@ import {
   startDanmu,
   stopDanmu,
   getDanmuStatus,
+  sleep,
+  deleteVideoList,
 } from '@/utils'
 import dayjs from 'dayjs'
 
@@ -148,10 +150,9 @@ const stopRun = () => {
   })
 }
 
-const deleteCompleteVideo = () => {
+const deleteCompleteVideo = async () => {
   const videoList = data.value.filter((item) => item.status === '1')
-  console.log(videoList, data.value)
-  Promise.all(videoList.map((item) => deleteVideo(item.id))).then(() => {
+  deleteVideoList(videoList.map((item) => item.id)).then(() => {
     getList()
     Message.success('删除成功')
   })
