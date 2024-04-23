@@ -115,7 +115,7 @@ class LicenseModel {
       where,
       // offset,
       // limit,
-      order: [['createdAt', 'DESC']],
+      order: [['createdAt', 'ASC']],
     })
   }
 }
