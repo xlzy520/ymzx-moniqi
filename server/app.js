@@ -410,7 +410,7 @@ const runVideoDanmu = async () => {
     await ConfigDataModel.update({ value: 'stop' }, { key: 'danmuRunStatus' })
   }
   if (!stop) {
-    const videoInterval = (await ConfigDataModel.findOne({ key: 'videoInterval' }))?.value || 20
+    const videoInterval = (await ConfigDataModel.findOne({ key: 'videoInterval' }))?.value || 180
     console.log(`${currentTime()} 等待 ${videoInterval} 秒后继续发送弹幕`)
     await sleep(videoInterval * 1000)
     runVideoDanmu()

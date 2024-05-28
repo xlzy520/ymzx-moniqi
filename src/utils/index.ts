@@ -6,7 +6,7 @@ import qs from 'qs'
 import { isObject } from 'lodash'
 
 const isDev = import.meta.env.DEV
-export const baseURL = isDev ? 'http://localhost:8888' : 'http://api.flsk.cc'
+export const baseURL = isDev ? 'http://localhost:8888' : location.origin + ':8888'
 
 export const service = axios.create({
   baseURL,
