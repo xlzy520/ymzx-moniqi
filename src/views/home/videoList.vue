@@ -47,6 +47,7 @@ const accessKey = ref('')
 const mode = ref('queue')
 const danmuInterval = ref(3)
 const videoInterval = ref(20)
+const accountNumForVideo = ref(2)
 const currentRunStatus = ref('stop')
 
 const getList = () => {
@@ -116,6 +117,10 @@ const changeVideoInterval = () => {
   setLocalValue('videoInterval', videoInterval.value)
 }
 
+const changeAccountNumForVideo = () => {
+  setLocalValue('accountNumForVideo', accountNumForVideo.value)
+}
+
 const currentVideo = ref({})
 
 const asyncRunStatus = () => {
@@ -165,6 +170,9 @@ onMounted(() => {
   getLocalValue('videoInterval').then((res) => {
     videoInterval.value = res || 20
   })
+  getLocalValue('accountNumForVideo').then((res) => {
+    accountNumForVideo.value = res || 2
+  })
   runInterval = setInterval(() => {
     asyncRunStatus()
     getList()
@@ -192,6 +200,10 @@ const danmuSendModeMap = {
         <div class="layout-items-center">
           <div class="mr-2 whitespace-nowrap">视频间隔时间(秒)：</div>
           <InputNumber v-model="videoInterval" @change="changeVideoInterval" :precision="2" />
+        </div>
+        <div class="layout-items-center ml-2">
+          <div class="mr-2 whitespace-nowrap">视频使用账号数量：</div>
+          <InputNumber v-model="accountNumForVideo" @change="changeAccountNumForVideo" :precision="0" />
         </div>
       </div>
       <div class="mb-2 layout-items-center">

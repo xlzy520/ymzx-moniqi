@@ -27,8 +27,9 @@ function hex2int(hex) {
     code = hex.charCodeAt(i)
     if (code >= 48 && code < 58) {
       code -= 48
-    } else {
-      code = (code & 0xdf) - 65 + 10
+    }
+    else {
+      code = (code & 0xDF) - 65 + 10
     }
     a[i] = code
   }
@@ -43,7 +44,7 @@ app.use(cors())
 app.use(
   express.json({
     limit: '10mb',
-  })
+  }),
 )
 app.use(express.urlencoded({ limit: '10mb', extended: false }))
 
@@ -59,6 +60,11 @@ const serviceWarn = (text) => {
   })
 }
 
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+
 app.post('/api/setLocalValue', async (req, res) => {
   const { key, value } = req.body
   if (!key || !value) {
@@ -72,7 +78,8 @@ app.post('/api/setLocalValue', async (req, res) => {
   const config = await ConfigDataModel.findOne({ key })
   if (config) {
     await ConfigDataModel.update({ value }, { key })
-  } else {
+  }
+  else {
     await ConfigDataModel.add({ key, value })
   }
   res.send({
@@ -283,7 +290,8 @@ app.get('/api/getVideoList', (req, res) => {
           message: '查询失败',
         })
       })
-  } catch (err) {
+  }
+  catch (err) {
     console.log(err, '===========打印的 ------ ')
   }
 })
@@ -309,7 +317,7 @@ const postDanmu = ({ mid, csrf, cookie, cid, aid, message, progress, fontsize = 
     csrf,
   }
   const data = qs.stringify(formdata)
-  return axios.post(`https://api.bilibili.com/x/v2/dm/post`, data, {
+  return axios.post('https://api.bilibili.com/x/v2/dm/post', data, {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       cookie,
@@ -319,6 +327,7 @@ const postDanmu = ({ mid, csrf, cookie, cid, aid, message, progress, fontsize = 
 
 let stop = true
 let currentVideo = null
+let accountIndex = 0
 
 const runVideoDanmu = async () => {
   const result = await VideoModel.findAndCountAll({
@@ -335,8 +344,9 @@ const runVideoDanmu = async () => {
     let accounts = []
     try {
       const accountsJSON = JSON.parse(accountsStr)
-      accounts = accountsJSON.filter((item) => item.danmu)
-    } catch (e) {
+      accounts = accountsJSON.filter(item => item.danmu)
+    }
+    catch (e) {
       console.log(e)
     }
 
@@ -348,17 +358,31 @@ const runVideoDanmu = async () => {
     const danmuList = (await ConfigDataModel.findOne({ key: 'danmuList' })).value
     const danmuListJSON = JSON.parse(danmuList)
     const danmuSendMode = (await ConfigDataModel.findOne({ key: 'danmuSendMode' }))?.value || 'queue'
+    const accountNumForVideo = (await ConfigDataModel.findOne({ key: 'accountNumForVideo' }))?.value || 2
     console.log(`${currentTime()} 弹幕发送模式：${danmuSendMode}`)
     const danmuInterval = (await ConfigDataModel.findOne({ key: 'danmuInterval' }))?.value || 0.5
     let danmiuConfig
     let danmuCount = 0
     let index = 0
-    for (const account of accounts) {
+
+    // 配置了accountNumForVideo，作用是每次按顺序读取账号的个数
+    const start = accountIndex % accounts.length
+    const end = (accountIndex + accountNumForVideo) % accounts.length
+    let lastAccounts = accounts.slice(start, end)
+    if (lastAccounts.length < accountNumForVideo) {
+      lastAccounts = accounts.slice(start, accountIndex + accountNumForVideo)
+      const restNum = accountNumForVideo - lastAccounts.length
+      lastAccounts = lastAccounts.concat(accounts.slice(0, restNum))
+    }
+    accountIndex += accountNumForVideo
+
+    for (const account of lastAccounts) {
       console.log(`${currentTime()} 发送弹幕 ${account.mid} - ${account.nickname}`)
       if (danmuSendMode === 'queue') {
         danmiuConfig = danmuListJSON[index]
         index++
-      } else if (danmuSendMode === 'random') {
+      }
+      else if (danmuSendMode === 'random') {
         danmiuConfig = danmuListJSON[Math.floor(Math.random() * danmuListJSON.length)]
       }
       if (!danmiuConfig) {
@@ -389,11 +413,12 @@ const runVideoDanmu = async () => {
           await VideoModel.update({
             id: firstVideo.id,
             status: 1,
-            danmuCount: danmuCount,
+            danmuCount,
             postAt: new Date(),
           })
         })
-      } catch (err) {
+      }
+      catch (err) {
         console.log(`${currentTime()} 发送弹幕失败，失败原因：${err.message} ${account.mid} - ${message}`)
         await VideoModel.update({
           id: firstVideo.id,
@@ -404,7 +429,8 @@ const runVideoDanmu = async () => {
       console.log(`${currentTime()} 等待 ${danmuInterval} 秒后继续发送弹幕`)
       await sleep(danmuInterval * 1000)
     }
-  } else {
+  }
+  else {
     console.log('没有需要处理的数据')
     stop = true
     await ConfigDataModel.update({ value: 'stop' }, { key: 'danmuRunStatus' })
@@ -417,7 +443,7 @@ const runVideoDanmu = async () => {
   }
 }
 
-let timer = null
+const timer = null
 
 app.get('/api/startDanmu', async (req, res) => {
   if (!stop) {
@@ -466,7 +492,8 @@ app.get('/api/getDanmuStatus', async (req, res) => {
       },
       message: '弹幕发送中',
     })
-  } else {
+  }
+  else {
     res.send({
       code: 200,
       data: {

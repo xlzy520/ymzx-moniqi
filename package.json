@@ -11,7 +11,7 @@
     "lint-staged": "npx lint-staged",
     "build:normal": "vite build --config ./config/vite.config.prod.ts",
     "start:server": "cross-env mode=dev ./node_modules/.bin/nodemon ./server/bin/www",
-    "build:server": "webpack --progress",
+    "build:server": "webpack --progress --config ./server/webpack.config.js",
     "deploy": "bash deploy.sh"
   },
   "dependencies": {
